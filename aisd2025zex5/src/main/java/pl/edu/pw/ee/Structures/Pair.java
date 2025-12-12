@@ -16,7 +16,7 @@ public class Pair
         return character;
     }
 
-    public int getOccurance()
+    public int getOccurrence()
     {
         return occurrence;
     }

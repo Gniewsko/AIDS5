@@ -18,9 +18,16 @@ public class HuffmanTree
                 }
             }
 
-            if(queue.size() == 1)
+            if(queue.size() == 0)
             {
                 return null;
+            }
+
+            if(queue.size() == 1)
+            {
+                Node leaf = queue.poll();
+                Node artificialParent = new Node(leaf, null);
+                return artificialParent;
             }
 
             while(queue.size() > 1)
