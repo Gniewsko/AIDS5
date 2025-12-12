@@ -1,9 +1,9 @@
-package pl.edu.pw.ee;
+package pl.edu.pw.ee.Structures;
 public class Node implements Comparable<Node> 
 {
     
     private final int symbol;
-    private final int frequency;
+    private final int frequency; //ile razy sie powtórzyło
     private final Node left;
     private final Node right;
 

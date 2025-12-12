@@ -1,11 +1,11 @@
-package pl.edu.pw.ee;
+package pl.edu.pw.ee.Structures;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PriorityQueue
 {
-    private List<Node> heap = new ArrayList<>();
+    private final List<Node> heap = new ArrayList<>();
     //lewe dziecko = 2 * i + 1
     //prawe dziecko = 2 * i + 2
     //rodzic = (i - 1) / 2

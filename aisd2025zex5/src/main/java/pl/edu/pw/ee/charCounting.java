@@ -2,7 +2,7 @@ package pl.edu.pw.ee;
 
 public class CharCounting 
 {
-    public int[] count(int wordLength, byte[] data)
+    public static int[] count(int wordLength, byte[] data)
     {
         int arraySize = (int) Math.pow(256, wordLength);
         int[] occurrences = new int[arraySize];
