@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import pl.edu.pw.ee.Structures.Node;
 import pl.edu.pw.ee.Structures.Pair;
 
 public class Compression 
@@ -14,7 +15,7 @@ public class Compression
     private int currentByte = 0;
     private int numBitsFilled = 0;
 
-    public byte[] readFile(String path) throws IOException 
+    private byte[] readFile(String path) throws IOException 
     {
         File file = new File(path);
            
@@ -55,16 +56,26 @@ public class Compression
         return data;
     }
 
-    public void compressAndSave(byte[] data, int wordLength, String[] codes, String path, int[] occurrances) throws IOException
+    public void compressAndSave(int wordLength, String inputPath, String outputPath) throws IOException
     {
-        try(FileOutputStream fos = new FileOutputStream(path))
+        byte[] data = readFile(inputPath);
+
+        int[] occurrences = CharCounting.count(wordLength, data);
+
+        HuffmanTree huffmanTree = new HuffmanTree();
+        Node root = huffmanTree.buildTree(occurrences);
+
+        String[] codes = huffmanTree.getCodes(root, wordLength);
+
+
+        try(FileOutputStream fos = new FileOutputStream(outputPath))
         {
             currentByte = 0;
             numBitsFilled = 0;
 
             int totalSymbols = data.length / wordLength;
 
-            writeHeader(fos, wordLength, occurrances, totalSymbols);
+            writeHeader(fos, wordLength, occurrences, totalSymbols);
 
             for(int i = 0; i <= data.length - wordLength; i += wordLength)
             {

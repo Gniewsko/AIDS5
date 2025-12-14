@@ -43,8 +43,9 @@ public class HuffmanTree
             return queue.poll();
         }
 
-        public String[] getCodes(Node root, int arraySize) 
+        public String[] getCodes(Node root, int wordLength) 
         {
+            int arraySize = (int) Math.pow(256, wordLength);
             String[] codes = new String[arraySize];
 
             if (root != null) 

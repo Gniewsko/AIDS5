@@ -1,5 +1,7 @@
 package pl.edu.pw.ee;
 
+import java.io.IOException;
+
 public class App 
 {
     public static void main( String[] args )
@@ -57,6 +59,10 @@ public class App
                         }
                     }
                     break;
+
+                default:
+                    System.out.println("Warning: Wrong argument was used!");
+                    break;
             }
         }
 
@@ -65,6 +71,41 @@ public class App
             System.out.println("Error: User put not enough/wrong arguments");
             System.out.println("Usage: java -jar huffman.jar -m <comp|decomp> -s <inputPath> -d <outputPath> -l <1|2>");
             System.out.println("-l <1|2> is not necessary");
+            return;
+        }
+
+        if(mode.equals("comp")) 
+        {
+            Compression comp = new Compression();
+
+            try
+            {
+                comp.compressAndSave(wordLength, inputPath, outputPath);
+            }
+            catch(IOException e)
+            {
+                System.out.println("Compression error: " + e.getMessage());
+                return;
+            }
+        }
+        else if(mode.equals("decomp"))
+        {
+            Decompression decomp = new Decompression();
+
+            try
+            {
+                decomp.decompress(inputPath, outputPath, wordLength);
+            }
+            catch(IOException e)
+            {
+                System.out.println("Decompression error: " + e.getMessage());
+                return;
+            }
+        }
+        else
+        {
+            System.out.println("Error: any of acceptable modes were detected!");
+            System.out.println("Modes available: comp (compression), decomp (decompression)");
             return;
         }
     }

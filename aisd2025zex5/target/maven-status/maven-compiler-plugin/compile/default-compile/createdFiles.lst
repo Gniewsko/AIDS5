@@ -1,0 +1,9 @@
+pl\edu\pw\ee\Structures\Node.class
+pl\edu\pw\ee\Structures\PriorityQueue.class
+pl\edu\pw\ee\Structures\MapOfPairs.class
+pl\edu\pw\ee\App.class
+pl\edu\pw\ee\Decompression.class
+pl\edu\pw\ee\Structures\Pair.class
+pl\edu\pw\ee\HuffmanTree.class
+pl\edu\pw\ee\CharCounting.class
+pl\edu\pw\ee\Compression.class
