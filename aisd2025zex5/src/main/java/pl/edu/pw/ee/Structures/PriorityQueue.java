@@ -64,12 +64,12 @@ public class PriorityQueue
     private void goDown(int index)
     {
         int size = heap.size();
+        int smallest = index;
 
         while(true)
         {
             int leftChild = 2 * index + 1;
             int rightChild = 2 * index + 2;
-            int smallest = index;
 
             if (leftChild < size && heap.get(leftChild).compareTo(heap.get(smallest)) < 0) 
             {

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HuffmanTree.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aisd2025zex5</a> &gt; <a href="index.source.html" class="el_package">pl.edu.pw.ee</a> &gt; <span class="el_source">HuffmanTree.java</span></div><h1>HuffmanTree.java</h1><pre class="source lang-java linenums">package pl.edu.pw.ee;
+
+import pl.edu.pw.ee.Structures.Node;
+import pl.edu.pw.ee.Structures.PriorityQueue;
+
+<span class="fc" id="L6">public class HuffmanTree </span>
+{
+        public Node buildTree(int[] occurrences)
+        {
+<span class="fc" id="L10">            PriorityQueue queue = new PriorityQueue();</span>
+
+<span class="fc bfc" id="L12" title="All 2 branches covered.">            for(int i = 0; i &lt; occurrences.length; i++)</span>
+            {
+<span class="fc bfc" id="L14" title="All 2 branches covered.">                if(occurrences[i] &gt; 0)</span>
+                {
+<span class="fc" id="L16">                    Node leaf = new Node(i, occurrences[i]);</span>
+<span class="fc" id="L17">                    queue.add(leaf);</span>
+                }
+            }
+
+<span class="fc bfc" id="L21" title="All 2 branches covered.">            if(queue.size() == 0)</span>
+            {
+<span class="fc" id="L23">                return null;</span>
+            }
+
+<span class="fc bfc" id="L26" title="All 2 branches covered.">            if(queue.size() == 1)</span>
+            {
+<span class="fc" id="L28">                Node leaf = queue.poll();</span>
+<span class="fc" id="L29">                Node artificialParent = new Node(leaf, null);</span>
+<span class="fc" id="L30">                return artificialParent;</span>
+            }
+
+<span class="fc bfc" id="L33" title="All 2 branches covered.">            while(queue.size() &gt; 1)</span>
+            {
+<span class="fc" id="L35">                Node left = queue.poll();</span>
+<span class="fc" id="L36">                Node right = queue.poll();</span>
+
+<span class="fc" id="L38">                Node parent = new Node(left, right);</span>
+
+<span class="fc" id="L40">                queue.add(parent);</span>
+<span class="fc" id="L41">            }</span>
+
+<span class="fc" id="L43">            return queue.poll();</span>
+        }
+
+        public String[] getCodes(Node root, int wordLength) 
+        {
+<span class="fc" id="L48">            int arraySize = (int) Math.pow(256, wordLength);</span>
+<span class="fc" id="L49">            String[] codes = new String[arraySize];</span>
+
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            if (root != null) </span>
+            {
+<span class="fc" id="L53">                generateRecursive(root, &quot;&quot;, codes);</span>
+            }
+
+<span class="fc" id="L56">            return codes;</span>
+        }
+
+        private void generateRecursive(Node node, String currentCode, String[] codes) 
+        {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">            if (node == null) </span>
+                {
+<span class="fc" id="L63">                return;</span>
+            }
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (node.isLeaf()) </span>
+            {
+<span class="fc" id="L68">                codes[node.getSymbol()] = currentCode;</span>
+<span class="fc" id="L69">                return;</span>
+            }
+            
+<span class="fc" id="L72">            generateRecursive(node.getLeft(), currentCode + &quot;1&quot;, codes);</span>
+<span class="fc" id="L73">            generateRecursive(node.getRight(), currentCode + &quot;0&quot;, codes);</span>
+<span class="fc" id="L74">        }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -3,15 +3,15 @@ public class Node implements Comparable<Node>
 {
     
     private final int symbol;
-    private final int frequency; //ile razy sie powtórzyło
+    private final int occurrence;
     private final Node left;
     private final Node right;
 
 
-    public Node(int symbol, int frequency) //liść
+    public Node(int symbol, int occurrence) //liść
     {
         this.symbol = symbol;
-        this.frequency = frequency;
+        this.occurrence = occurrence;
         this.left = null;
         this.right = null;
     }
@@ -19,9 +19,21 @@ public class Node implements Comparable<Node>
     public Node(Node left, Node right) //nie liść
     {
         this.symbol = -1;
-        this.frequency = left.frequency + right.frequency;
         this.left = left;
         this.right = right;
+
+        int rightOccurrence;
+
+        if(right == null) //jeżeli tworzymy sztucznego rodzica (plik będzie z jednym znakiem, np. "AAAAAAA") to będzie on lewym dzieckiem sztucznego rodzica
+        {
+            rightOccurrence = 0;
+        }
+        else
+        {
+            rightOccurrence = right.occurrence;
+        }
+
+        this.occurrence = left.occurrence + rightOccurrence;
     }
 
     public int getSymbol() 
@@ -29,9 +41,9 @@ public class Node implements Comparable<Node>
         return symbol; 
     }
     
-    public int getFrequency() 
+    public int getOccurrence()  
     { 
-        return frequency; 
+        return occurrence; 
     }
 
     public Node getLeft() 
@@ -52,6 +64,6 @@ public class Node implements Comparable<Node>
     @Override
     public int compareTo(Node other) // x<0 - wyższy priorytet (mniej wystąpień), x>0 - niższy priorytet (więcej wystąpień)
     {
-        return this.frequency - other.frequency;
+        return this.occurrence - other.occurrence;
     }
 }

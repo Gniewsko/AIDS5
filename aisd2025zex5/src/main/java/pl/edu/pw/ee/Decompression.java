@@ -63,7 +63,7 @@ public class Decompression
 
             for(int i = 0; i < pairsCount; i++)
             {
-                int character = readInt(fis);
+                int character = readSymbol(fis, wordLength);
                 int occurrence = readInt(fis);
 
                 occurrences[character] = occurrence;
@@ -94,6 +94,24 @@ public class Decompression
         }
 
         return ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4);
+    }
+
+    private int readSymbol(FileInputStream fis, int length) throws IOException 
+    {
+        int symbol = 0;
+        
+        for (int i = 0; i < length; i++) 
+        {
+            int b = fis.read();
+            if (b == -1) 
+            {
+                throw new IOException("EOF reached while reading symbol!");
+            }
+
+            symbol = (symbol << 8) | b;
+        }
+        
+        return symbol;
     }
 
     private void readBytes(FileInputStream fis, Node currentNode, int totalSymbols, int wordLength, String outputPath) throws IOException

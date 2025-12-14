@@ -135,6 +135,14 @@ public class Compression
         }
     }
 
+    private void writeSymbol(FileOutputStream fos, int value, int length) throws IOException 
+    {
+        for (int i = length - 1; i >= 0; i--) 
+        {
+            fos.write((value >> (8 * i)) & 0xFF);
+        }
+    }
+
     private void writeInt(FileOutputStream fos, int value) throws IOException 
     {
         fos.write((value >> 24) & 0xFF);
@@ -154,7 +162,7 @@ public class Compression
 
         for (Pair pair : pairsList) 
         {
-            writeInt(fos, pair.getCharacter());
+            writeSymbol(fos, pair.getCharacter(), wordLength);
             writeInt(fos, pair.getOccurrence());
         }
     }

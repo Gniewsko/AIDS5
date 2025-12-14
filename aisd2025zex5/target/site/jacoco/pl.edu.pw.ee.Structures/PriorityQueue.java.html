@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PriorityQueue.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aisd2025zex5</a> &gt; <a href="index.source.html" class="el_package">pl.edu.pw.ee.Structures</a> &gt; <span class="el_source">PriorityQueue.java</span></div><h1>PriorityQueue.java</h1><pre class="source lang-java linenums">package pl.edu.pw.ee.Structures;
+
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="fc" id="L6">public class PriorityQueue</span>
+{
+<span class="fc" id="L8">    private final List&lt;Node&gt; heap = new ArrayList&lt;&gt;();</span>
+    //lewe dziecko = 2 * i + 1
+    //prawe dziecko = 2 * i + 2
+    //rodzic = (i - 1) / 2
+
+    public void add(Node node)
+    {
+<span class="fc" id="L15">        heap.add(node);</span>
+<span class="fc" id="L16">        goUp(heap.size() - 1);</span>
+<span class="fc" id="L17">    }</span>
+
+    public Node poll()
+    {
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        if(heap.isEmpty())</span>
+        {
+<span class="fc" id="L23">            return null;</span>
+        }
+
+<span class="fc" id="L26">        Node result = heap.get(0);</span>
+
+<span class="fc" id="L28">        Node last = heap.remove(heap.size() - 1);</span>
+
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if(!heap.isEmpty())</span>
+        {
+<span class="fc" id="L32">            heap.set(0, last);</span>
+<span class="fc" id="L33">            goDown(0);</span>
+        }
+
+<span class="fc" id="L36">        return result;</span>
+    }
+
+    public int size()
+    {
+<span class="fc" id="L41">        return heap.size();</span>
+    }
+
+    private void goUp(int index)
+    {
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        while(index &gt; 0)</span>
+        {
+<span class="fc" id="L48">            int parentIndex = (index - 1) / 2;</span>
+<span class="fc" id="L49">            Node current = heap.get(index);</span>
+<span class="fc" id="L50">            Node parent = heap.get(parentIndex);</span>
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if(current.compareTo(parent) &lt; 0)</span>
+            {
+<span class="fc" id="L54">                swap(index, parentIndex);</span>
+<span class="fc" id="L55">                index = parentIndex;</span>
+            }
+            else
+            {
+                break;
+            }
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">    }</span>
+
+    private void goDown(int index)
+    {
+<span class="fc" id="L66">        int size = heap.size();</span>
+<span class="fc" id="L67">        int smallest = index;</span>
+
+        while(true)
+        {
+<span class="fc" id="L71">            int leftChild = 2 * index + 1;</span>
+<span class="fc" id="L72">            int rightChild = 2 * index + 2;</span>
+
+<span class="fc bfc" id="L74" title="All 4 branches covered.">            if (leftChild &lt; size &amp;&amp; heap.get(leftChild).compareTo(heap.get(smallest)) &lt; 0) </span>
+            {
+<span class="fc" id="L76">                smallest = leftChild;</span>
+            }
+
+<span class="fc bfc" id="L79" title="All 4 branches covered.">            if (rightChild &lt; size &amp;&amp; heap.get(rightChild).compareTo(heap.get(smallest)) &lt; 0) </span>
+            {
+<span class="fc" id="L81">                smallest = rightChild;</span>
+            }
+
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            if (smallest != index) </span>
+            {
+<span class="fc" id="L86">                swap(index, smallest);</span>
+<span class="fc" id="L87">                index = smallest;</span>
+            } 
+            else 
+            {
+                break;
+            }
+<span class="fc" id="L93">        }</span>
+<span class="fc" id="L94">    }</span>
+
+    private void swap(int i, int j)
+    {
+<span class="fc" id="L98">        Node tmp = heap.get(i);</span>
+<span class="fc" id="L99">        heap.set(i, heap.get(j));</span>
+<span class="fc" id="L100">        heap.set(j, tmp);</span>
+<span class="fc" id="L101">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

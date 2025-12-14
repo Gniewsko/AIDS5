@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Node.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aisd2025zex5</a> &gt; <a href="index.source.html" class="el_package">pl.edu.pw.ee.Structures</a> &gt; <span class="el_source">Node.java</span></div><h1>Node.java</h1><pre class="source lang-java linenums">package pl.edu.pw.ee.Structures;
+public class Node implements Comparable&lt;Node&gt; 
+{
+    
+    private final int symbol;
+    private final int occurrence;
+    private final Node left;
+    private final Node right;
+
+
+    public Node(int symbol, int occurrence) //liść
+<span class="fc" id="L12">    {</span>
+<span class="fc" id="L13">        this.symbol = symbol;</span>
+<span class="fc" id="L14">        this.occurrence = occurrence;</span>
+<span class="fc" id="L15">        this.left = null;</span>
+<span class="fc" id="L16">        this.right = null;</span>
+<span class="fc" id="L17">    }</span>
+
+    public Node(Node left, Node right) //nie liść
+<span class="fc" id="L20">    {</span>
+<span class="fc" id="L21">        this.symbol = -1;</span>
+<span class="fc" id="L22">        this.left = left;</span>
+<span class="fc" id="L23">        this.right = right;</span>
+
+        int rightOccurrence;
+
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if(right == null) //jeżeli tworzymy sztucznego rodzica (plik będzie z jednym znakiem, np. &quot;AAAAAAA&quot;) to będzie on lewym dzieckiem sztucznego rodzica</span>
+        {
+<span class="fc" id="L29">            rightOccurrence = 0;</span>
+        }
+        else
+        {
+<span class="fc" id="L33">            rightOccurrence = right.occurrence;</span>
+        }
+
+<span class="fc" id="L36">        this.occurrence = left.occurrence + rightOccurrence;</span>
+<span class="fc" id="L37">    }</span>
+
+    public int getSymbol() 
+    { 
+<span class="fc" id="L41">        return symbol; </span>
+    }
+    
+    public int getOccurrence()  
+    { 
+<span class="fc" id="L46">        return occurrence; </span>
+    }
+
+    public Node getLeft() 
+    { 
+<span class="fc" id="L51">        return left; </span>
+    }
+    
+    public Node getRight() 
+    { 
+<span class="fc" id="L56">        return right; </span>
+    }
+
+    public boolean isLeaf() 
+    {
+<span class="pc bpc" id="L61" title="1 of 4 branches missed.">        return left == null &amp;&amp; right == null;</span>
+    }
+
+    @Override
+    public int compareTo(Node other) // x&lt;0 - wyższy priorytet (mniej wystąpień), x&gt;0 - niższy priorytet (więcej wystąpień)
+    {
+<span class="fc" id="L67">        return this.occurrence - other.occurrence;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

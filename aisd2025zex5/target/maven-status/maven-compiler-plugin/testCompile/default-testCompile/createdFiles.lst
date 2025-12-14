@@ -1,1 +1,5 @@
-pl\edu\pw\ee\AppTest.class
+pl\edu\pw\ee\HuffmanTreeTest.class
+pl\edu\pw\ee\Structures\PriorityQueueTest.class
+pl\edu\pw\ee\CompressionAndDecompressionTest.class
+pl\edu\pw\ee\CharCountingTest.class
+pl\edu\pw\ee\Structures\NodeTest.class

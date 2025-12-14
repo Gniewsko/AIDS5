@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Compression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">aisd2025zex5</a> &gt; <a href="index.source.html" class="el_package">pl.edu.pw.ee</a> &gt; <span class="el_source">Compression.java</span></div><h1>Compression.java</h1><pre class="source lang-java linenums">package pl.edu.pw.ee;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import pl.edu.pw.ee.Structures.Node;
+import pl.edu.pw.ee.Structures.Pair;
+
+<span class="fc" id="L13">public class Compression </span>
+{
+<span class="fc" id="L15">    private int currentByte = 0;</span>
+<span class="fc" id="L16">    private int numBitsFilled = 0;</span>
+
+    private byte[] readFile(String path) throws IOException 
+    {
+<span class="fc" id="L20">        File file = new File(path);</span>
+           
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        if (!file.exists()) </span>
+        {
+<span class="fc" id="L24">            throw new IOException(&quot;Input file does not exist: &quot; + path);</span>
+        }
+
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if (file.isDirectory()) </span>
+        {
+<span class="fc" id="L29">            throw new IOException(&quot;Input path is a directory, not a file: &quot; + path);</span>
+        }
+
+<span class="fc" id="L32">        long fileSize = file.length();</span>
+           
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        if (fileSize &gt; Integer.MAX_VALUE) </span>
+        {
+<span class="nc" id="L36">            throw new IOException(&quot;File is too large (above 2GB) to be read with one array!&quot;);</span>
+        }
+            
+<span class="fc" id="L39">        byte[] data = new byte[(int) fileSize];</span>
+
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (fileSize == 0) </span>
+        {
+<span class="fc" id="L43">            return new byte[0];</span>
+        }
+            
+<span class="fc" id="L46">        try (FileInputStream fis = new FileInputStream(file)) </span>
+        {
+<span class="fc" id="L48">            int bytesRead = fis.read(data);</span>
+                
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (bytesRead != fileSize) </span>
+            {
+<span class="nc" id="L52">                throw new IOException(&quot;Failed to read the entire file! Expected &quot; + fileSize + &quot; bytes, got &quot; + bytesRead);</span>
+            }
+        }
+            
+<span class="fc" id="L56">        return data;</span>
+    }
+
+    public void compressAndSave(int wordLength, String inputPath, String outputPath) throws IOException
+    {
+<span class="fc" id="L61">        byte[] data = readFile(inputPath);</span>
+
+<span class="fc" id="L63">        int[] occurrences = CharCounting.count(wordLength, data);</span>
+
+<span class="fc" id="L65">        HuffmanTree huffmanTree = new HuffmanTree();</span>
+<span class="fc" id="L66">        Node root = huffmanTree.buildTree(occurrences);</span>
+
+<span class="fc" id="L68">        String[] codes = huffmanTree.getCodes(root, wordLength);</span>
+
+
+<span class="fc" id="L71">        try(FileOutputStream fos = new FileOutputStream(outputPath))</span>
+        {
+<span class="fc" id="L73">            currentByte = 0;</span>
+<span class="fc" id="L74">            numBitsFilled = 0;</span>
+
+<span class="fc" id="L76">            int totalSymbols = data.length / wordLength;</span>
+
+<span class="fc" id="L78">            writeHeader(fos, wordLength, occurrences, totalSymbols);</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            for(int i = 0; i &lt;= data.length - wordLength; i += wordLength)</span>
+            {
+<span class="fc" id="L82">                int index = 0;</span>
+                
+<span class="fc bfc" id="L84" title="All 2 branches covered.">                for(int j = 0; j &lt; wordLength; j++)</span>
+                {
+<span class="fc" id="L86">                    index = (index &lt;&lt; 8) | (data[i + j] &amp; 0xFF);</span>
+                }
+
+<span class="fc" id="L89">                String code = codes[index];</span>
+
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">                if(code == null)</span>
+                {
+<span class="nc" id="L93">                    throw new IOException(&quot;No Huffman code found for symbol&quot; + index);</span>
+                }
+
+<span class="fc" id="L96">                separateToBytes(code, fos);</span>
+            }
+
+<span class="fc" id="L99">            restOfBits(fos);</span>
+        }
+<span class="fc" id="L101">    }</span>
+
+    private void separateToBytes(String code, FileOutputStream fos) throws IOException
+    {
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        for(char bit : code.toCharArray())</span>
+        {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">            if(bit =='1')</span>
+            {
+<span class="fc" id="L109">                currentByte = (currentByte &lt;&lt; 1) | 1;</span>
+            }
+            else
+            {
+<span class="fc" id="L113">                currentByte = (currentByte &lt;&lt; 1);</span>
+            }
+
+<span class="fc" id="L116">            numBitsFilled++;</span>
+
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if(numBitsFilled == 8)</span>
+            {
+<span class="fc" id="L120">                fos.write(currentByte);</span>
+<span class="fc" id="L121">                currentByte = 0;</span>
+<span class="fc" id="L122">                numBitsFilled = 0;</span>
+            }
+        }
+<span class="fc" id="L125">    }</span>
+
+    private void restOfBits(FileOutputStream fos)  throws IOException
+    {
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if(numBitsFilled &gt; 0)</span>
+        {
+<span class="fc" id="L131">            currentByte = (currentByte &lt;&lt; (8 - numBitsFilled));</span>
+<span class="fc" id="L132">            fos.write(currentByte);</span>
+<span class="fc" id="L133">            currentByte = 0;</span>
+<span class="fc" id="L134">            numBitsFilled = 0;</span>
+        }
+<span class="fc" id="L136">    }</span>
+
+    private void writeSymbol(FileOutputStream fos, int value, int length) throws IOException 
+    {
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        for (int i = length - 1; i &gt;= 0; i--) </span>
+        {
+<span class="fc" id="L142">            fos.write((value &gt;&gt; (8 * i)) &amp; 0xFF);</span>
+        }
+<span class="fc" id="L144">    }</span>
+
+    private void writeInt(FileOutputStream fos, int value) throws IOException 
+    {
+<span class="fc" id="L148">        fos.write((value &gt;&gt; 24) &amp; 0xFF);</span>
+<span class="fc" id="L149">        fos.write((value &gt;&gt; 16) &amp; 0xFF);</span>
+<span class="fc" id="L150">        fos.write((value &gt;&gt; 8) &amp; 0xFF);</span>
+<span class="fc" id="L151">        fos.write(value &amp; 0xFF);</span>
+<span class="fc" id="L152">    }</span>
+
+    private void writeHeader(FileOutputStream fos, int wordLength, int[] occurrences, int totalSymbols) throws IOException 
+    {
+<span class="fc" id="L156">        List&lt;Pair&gt; pairsList = convertToPairs(occurrences);</span>
+
+<span class="fc" id="L158">        fos.write(wordLength);</span>
+
+<span class="fc" id="L160">        writeInt(fos, totalSymbols);</span>
+<span class="fc" id="L161">        writeInt(fos, pairsList.size());</span>
+
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (Pair pair : pairsList) </span>
+        {
+<span class="fc" id="L165">            writeSymbol(fos, pair.getCharacter(), wordLength);</span>
+<span class="fc" id="L166">            writeInt(fos, pair.getOccurrence());</span>
+<span class="fc" id="L167">        }</span>
+<span class="fc" id="L168">    }</span>
+
+    private List&lt;Pair&gt; convertToPairs(int[] occurrences) 
+    {
+<span class="fc" id="L172">        List&lt;Pair&gt; pairs = new ArrayList&lt;&gt;();</span>
+    
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        for (int i = 0; i &lt; occurrences.length; i++) </span>
+        {
+<span class="fc bfc" id="L176" title="All 2 branches covered.">            if (occurrences[i] &gt; 0) </span>
+            {
+<span class="fc" id="L178">                pairs.add(new Pair(i, occurrences[i]));</span>
+            }
+        }
+
+<span class="fc" id="L182">        return pairs;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
