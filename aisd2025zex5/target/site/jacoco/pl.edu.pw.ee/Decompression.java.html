@@ -9,160 +9,193 @@ import pl.edu.pw.ee.Structures.Node;
 
 <span class="fc" id="L10">public class Decompression </span>
 {
+<span class="fc" id="L12">    private int currentBitVal = 0;</span>
+<span class="fc" id="L13">    private int currentBitIndex = -1; // -1 == trzeba wczytać nowy bajt</span>
+
     public void decompress(String inputPath, String outputPath, int wordLength) throws IOException 
     {
-<span class="fc" id="L14">        File fileInput = new File(inputPath);</span>
+<span class="fc" id="L17">        File fileInput = new File(inputPath);</span>
            
-<span class="fc bfc" id="L16" title="All 2 branches covered.">        if (!fileInput.exists()) </span>
+<span class="fc bfc" id="L19" title="All 2 branches covered.">        if (!fileInput.exists()) </span>
         {
-<span class="fc" id="L18">            throw new IOException(&quot;Input file does not exist: &quot; + inputPath);</span>
+<span class="fc" id="L21">            throw new IOException(&quot;Input file does not exist: &quot; + inputPath);</span>
         }
 
-<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        if (fileInput.isDirectory()) </span>
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">        if (fileInput.isDirectory()) </span>
         {
-<span class="nc" id="L23">            throw new IOException(&quot;Input Path is a directory, not a file: &quot; + inputPath);</span>
+<span class="nc" id="L26">            throw new IOException(&quot;Input Path is a directory, not a file: &quot; + inputPath);</span>
         }
 
-<span class="fc" id="L26">        long fileSize = fileInput.length();</span>
+<span class="fc" id="L29">        long fileSize = fileInput.length();</span>
            
-<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if (fileSize &gt; Integer.MAX_VALUE) </span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (fileSize &gt; Integer.MAX_VALUE) </span>
         {
-<span class="nc" id="L30">            throw new IOException(&quot;File is too large (above 2GB) to be read with one array!&quot;);</span>
+<span class="nc" id="L33">            throw new IOException(&quot;File is too large (above 2GB) to be read with one array!&quot;);</span>
         }
 
-<span class="fc" id="L33">        File fileOutput = new File(outputPath);</span>
+<span class="fc" id="L36">        File fileOutput = new File(outputPath);</span>
 
-<span class="fc bfc" id="L35" title="All 2 branches covered.">        if(!fileOutput.exists())</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if(!fileOutput.exists())</span>
         {
-<span class="fc" id="L37">            throw new IOException(&quot;Output file does not exist: &quot; + outputPath);</span>
+<span class="fc" id="L40">            throw new IOException(&quot;Output file does not exist: &quot; + outputPath);</span>
         }
 
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (fileOutput.isDirectory()) </span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (fileOutput.isDirectory()) </span>
         {
-<span class="nc" id="L42">            throw new IOException(&quot;Output Path is a directory, not a file: &quot; + outputPath);</span>
+<span class="nc" id="L45">            throw new IOException(&quot;Output Path is a directory, not a file: &quot; + outputPath);</span>
         }
             
-<span class="fc" id="L45">        try (FileInputStream fis = new FileInputStream(fileInput)) </span>
+<span class="fc" id="L48">        try (FileInputStream fis = new FileInputStream(fileInput)) </span>
         {
-<span class="fc" id="L47">            int fileWordLength = fis.read(); </span>
+<span class="fc" id="L50">            int fileWordLength = fis.read(); </span>
         
-<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (fileWordLength == -1) </span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">            if (fileWordLength == -1) </span>
             {
-<span class="nc" id="L51">                throw new IOException(&quot;File is empty or corrupted.&quot;);</span>
+<span class="nc" id="L54">                throw new IOException(&quot;File is empty or corrupted.&quot;);</span>
             }
 
-<span class="pc bpc" id="L54" title="1 of 2 branches missed.">            if (wordLength != fileWordLength) </span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">            if (wordLength != fileWordLength) </span>
             {
-<span class="nc" id="L56">                System.out.println(&quot;Warning: User set -l &quot; + wordLength + &quot;, but file was compressed with -l &quot; + fileWordLength + &quot;. Program wont work properly!&quot;);</span>
+<span class="nc" id="L59">                System.out.println(&quot;Warning: User set -l &quot; + wordLength + &quot;, but file was compressed with -l &quot; + fileWordLength + &quot;. Program wont work properly!&quot;);</span>
+            }
+            
+<span class="fc" id="L62">            currentBitIndex = -1;</span>
+
+<span class="fc" id="L64">            int totalSymbols = readInt(fis);</span>
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (totalSymbols == 0)</span>
+            { 
+<span class="fc" id="L68">                return;</span>
             }
 
-<span class="fc" id="L59">            int totalSymbols = readInt(fis);</span>
-<span class="fc" id="L60">            int pairsCount = readInt(fis);</span>
+<span class="fc" id="L71">            Node root = readTree(fis, wordLength);</span>
 
-<span class="fc" id="L62">            int[] occurrences = new int[(int) Math.pow(256, wordLength)];</span>
+<span class="fc" id="L73">            currentBitIndex = -1;</span>
 
-<span class="fc bfc" id="L64" title="All 2 branches covered.">            for(int i = 0; i &lt; pairsCount; i++)</span>
-            {
-<span class="fc" id="L66">                int character = readSymbol(fis, wordLength);</span>
-<span class="fc" id="L67">                int occurrence = readInt(fis);</span>
-
-<span class="fc" id="L69">                occurrences[character] = occurrence;</span>
-            }
-            // wczytany cały nagłówek!
-
-<span class="fc" id="L73">            HuffmanTree huffman = new HuffmanTree();</span>
-<span class="fc" id="L74">            Node root = huffman.buildTree(occurrences);</span>
-
-<span class="fc" id="L76">            Node currentNode = root;</span>
-
-<span class="fc" id="L78">            readBytes(fis, currentNode, totalSymbols, wordLength, outputPath);</span>
-        }
+<span class="fc" id="L75">            readBytes(fis, root, totalSymbols, wordLength, outputPath);</span>
+<span class="fc" id="L76">        }</span>
         
         
-<span class="fc" id="L82">    }</span>
+<span class="fc" id="L79">    }</span>
 
     private int readInt(FileInputStream fis) throws IOException 
     {
-<span class="fc" id="L86">        int b1 = fis.read();</span>
-<span class="fc" id="L87">        int b2 = fis.read();</span>
-<span class="fc" id="L88">        int b3 = fis.read();</span>
-<span class="fc" id="L89">        int b4 = fis.read();</span>
+<span class="fc" id="L83">        int b1 = fis.read();</span>
+<span class="fc" id="L84">        int b2 = fis.read();</span>
+<span class="fc" id="L85">        int b3 = fis.read();</span>
+<span class="fc" id="L86">        int b4 = fis.read();</span>
 
-<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        if ((b1 | b2 | b3 | b4) &lt; 0) </span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">        if ((b1 | b2 | b3 | b4) &lt; 0) </span>
         {
-<span class="nc" id="L93">            throw new IOException(&quot;EOF reached while reading integer!&quot;);</span>
+<span class="nc" id="L90">            throw new IOException(&quot;EOF reached while reading integer!&quot;);</span>
         }
 
-<span class="fc" id="L96">        return ((b1 &lt;&lt; 24) | (b2 &lt;&lt; 16) | (b3 &lt;&lt; 8) | b4);</span>
+<span class="fc" id="L93">        return ((b1 &lt;&lt; 24) | (b2 &lt;&lt; 16) | (b3 &lt;&lt; 8) | b4);</span>
     }
 
-    private int readSymbol(FileInputStream fis, int length) throws IOException 
+    /*
+    private int readSymbol(FileInputStream fis, int wordLength) throws IOException 
     {
-<span class="fc" id="L101">        int symbol = 0;</span>
+        int symbol = 0;
         
-<span class="fc bfc" id="L103" title="All 2 branches covered.">        for (int i = 0; i &lt; length; i++) </span>
+        for (int i = 0; i &lt; wordLength; i++) 
         {
-<span class="fc" id="L105">            int b = fis.read();</span>
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">            if (b == -1) </span>
+            int b = fis.read();
+            if (b == -1) 
             {
-<span class="nc" id="L108">                throw new IOException(&quot;EOF reached while reading symbol!&quot;);</span>
+                throw new IOException(&quot;EOF reached while reading symbol!&quot;);
             }
 
-<span class="fc" id="L111">            symbol = (symbol &lt;&lt; 8) | b;</span>
+            symbol = (symbol &lt;&lt; 8) | b;
         }
         
-<span class="fc" id="L114">        return symbol;</span>
+        return symbol;
+    }
+*/
+
+    private int readBit(FileInputStream fis) throws IOException 
+    {
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (currentBitIndex &lt; 0) </span>
+        {
+<span class="fc" id="L120">            currentBitVal = fis.read();</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">            if (currentBitVal == -1) </span>
+            {
+<span class="nc" id="L123">                throw new IOException(&quot;Unexpected EOF!&quot;);</span>
+            }
+<span class="fc" id="L125">            currentBitIndex = 7;</span>
+        }
+        
+<span class="fc" id="L128">        int bit = (currentBitVal &gt;&gt; currentBitIndex) &amp; 1;</span>
+<span class="fc" id="L129">        currentBitIndex--;</span>
+<span class="fc" id="L130">        return bit;</span>
+    }
+
+    private int readNBits(FileInputStream fis, int n) throws IOException
+    {
+<span class="fc" id="L135">        int value = 0;</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) </span>
+        {
+<span class="fc" id="L138">            value = (value &lt;&lt; 1) | readBit(fis);</span>
+        }
+<span class="fc" id="L140">        return value;</span>
+    }
+
+    private Node readTree(FileInputStream fis, int wordLength) throws IOException 
+    {
+<span class="fc" id="L145">        int bit = readBit(fis);</span>
+        
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        if (bit == 1) //liść</span>
+        {
+<span class="fc" id="L149">            int symbol = readNBits(fis, wordLength * 8);</span>
+<span class="fc" id="L150">            return new Node(symbol, 0);</span>
+        } 
+        else //węzeł wewnętrzny
+        {
+<span class="fc" id="L154">            Node left = readTree(fis, wordLength);</span>
+<span class="fc" id="L155">            Node right = readTree(fis, wordLength);</span>
+<span class="fc" id="L156">            return new Node(left, right);</span>
+        }
     }
 
     private void readBytes(FileInputStream fis, Node currentNode, int totalSymbols, int wordLength, String outputPath) throws IOException
     {
-<span class="fc" id="L119">        int symbolsDecoded = 0;</span>
-<span class="fc" id="L120">        Node root = currentNode;</span>
-        int currentByte;
+<span class="fc" id="L162">        int symbolsDecoded = 0;</span>
+<span class="fc" id="L163">        Node root = currentNode;</span>
 
-<span class="fc" id="L123">        try(FileOutputStream fos = new FileOutputStream(outputPath))</span>
+<span class="fc" id="L165">        try(FileOutputStream fos = new FileOutputStream(outputPath))</span>
         {
-<span class="pc bpc" id="L125" title="1 of 4 branches missed.">            while(symbolsDecoded &lt; totalSymbols &amp;&amp; (currentByte = fis.read()) != -1)</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">            while(symbolsDecoded &lt; totalSymbols)</span>
             {
-<span class="fc bfc" id="L127" title="All 2 branches covered.">                for(int i = 7; i &gt;= 0; i--)</span>
+<span class="fc" id="L169">                int bit = readBit(fis);</span>
+
+<span class="fc bfc" id="L171" title="All 2 branches covered.">                if(bit == 1)</span>
                 {
-<span class="fc" id="L129">                    int bit = (currentByte &gt;&gt; i) &amp; 1;</span>
-
-<span class="fc bfc" id="L131" title="All 2 branches covered.">                    if(bit == 1)</span>
-                    {
-<span class="fc" id="L133">                        currentNode = currentNode.getLeft();</span>
-                    }
-                    else
-                    {
-<span class="fc" id="L137">                        currentNode = currentNode.getRight();</span>
-                    }
-
-<span class="fc bfc" id="L140" title="All 2 branches covered.">                    if(currentNode.isLeaf() == true)</span>
-                    {
-<span class="fc" id="L142">                        saveSymbol(fos, currentNode.getSymbol(), wordLength);</span>
-
-<span class="fc" id="L144">                        symbolsDecoded++;</span>
-<span class="fc" id="L145">                        currentNode = root;</span>
-
-<span class="fc bfc" id="L147" title="All 2 branches covered.">                        if(symbolsDecoded == totalSymbols)</span>
-                        {
-<span class="fc" id="L149">                            break;</span>
-                        }
-                    }
+<span class="fc" id="L173">                    currentNode = currentNode.getLeft();</span>
                 }
-            }
+                else
+                {
+<span class="fc" id="L177">                    currentNode = currentNode.getRight();</span>
+                }
+
+<span class="fc bfc" id="L180" title="All 2 branches covered.">                if(currentNode.isLeaf())</span>
+                {
+<span class="fc" id="L182">                    saveSymbol(fos, currentNode.getSymbol(), wordLength);</span>
+<span class="fc" id="L183">                    symbolsDecoded++;</span>
+<span class="fc" id="L184">                    currentNode = root;</span>
+                }
+<span class="fc" id="L186">            }</span>
         }
-<span class="fc" id="L155">    }</span>
+<span class="fc" id="L188">    }</span>
 
     private void saveSymbol(FileOutputStream fos, int symbol, int wordLength) throws IOException
     {
-<span class="fc bfc" id="L159" title="All 2 branches covered.">        for(int i = wordLength - 1; i &gt;= 0; i--)</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        for(int i = wordLength - 1; i &gt;= 0; i--)</span>
         {
-<span class="fc" id="L161">            int lengthOfByte = 8 * i; //bo dla wordLength == 2, nasze słowo ma 16 bitów zamias 8 jak dla jednego bajta</span>
-<span class="fc" id="L162">            int singleByte = (symbol &gt;&gt; lengthOfByte) &amp; 0xFF;</span>
+<span class="fc" id="L194">            int lengthOfByte = 8 * i; //bo dla wordLength == 2, nasze słowo ma 16 bitów zamias 8 jak dla jednego bajta</span>
+<span class="fc" id="L195">            int singleByte = (symbol &gt;&gt; lengthOfByte) &amp; 0xFF;</span>
 
-<span class="fc" id="L164">            fos.write(singleByte);</span>
+<span class="fc" id="L197">            fos.write(singleByte);</span>
         }
-<span class="fc" id="L166">    }</span>
+<span class="fc" id="L199">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

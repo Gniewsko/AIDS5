@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import pl.edu.pw.ee.Structures.Node;
-import pl.edu.pw.ee.Structures.Pair;
 
 public class Compression 
 {
@@ -56,6 +53,53 @@ public class Compression
         return data;
     }
 
+    private String toBinaryString(int value, int wordLength) 
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = wordLength - 1; i >= 0; i--) 
+        {
+            sb.append((value >> i) & 1);
+        }
+        return sb.toString();
+    }
+
+    private void saveTree(Node node, FileOutputStream fos, int wordLength) throws IOException 
+    {
+        if (node == null) 
+        {
+            separateToBytes("1", fos); //liść
+            String symbolBits = toBinaryString(0, wordLength * 8); //0
+            separateToBytes(symbolBits, fos);
+            return;
+        }
+
+        if (node.isLeaf()) 
+        {
+            separateToBytes("1", fos); //liść
+            
+            String symbolBits = toBinaryString(node.getSymbol(), wordLength * 8);
+            separateToBytes(symbolBits, fos);
+        } 
+        else 
+        {
+            separateToBytes("0", fos); //węzeł wewnętrzny
+            saveTree(node.getLeft(), fos, wordLength);
+            saveTree(node.getRight(), fos, wordLength);
+        }
+    }
+
+    //padding po zapisie drzewa
+    private void flushBuffer(FileOutputStream fos) throws IOException
+    {
+        if (numBitsFilled > 0) 
+        {
+            currentByte = currentByte << (8 - numBitsFilled); 
+            fos.write(currentByte);
+            currentByte = 0;
+            numBitsFilled = 0;
+        }
+    }
+
     public void compressAndSave(int wordLength, String inputPath, String outputPath) throws IOException
     {
         byte[] data = readFile(inputPath);
@@ -75,7 +119,7 @@ public class Compression
 
             int totalSymbols = data.length / wordLength;
 
-            writeHeader(fos, wordLength, occurrences, totalSymbols);
+            writeHeader(fos, wordLength, root, totalSymbols);
 
             for(int i = 0; i <= data.length - wordLength; i += wordLength)
             {
@@ -134,7 +178,7 @@ public class Compression
             numBitsFilled = 0;
         }
     }
-
+/*
     private void writeSymbol(FileOutputStream fos, int value, int length) throws IOException 
     {
         for (int i = length - 1; i >= 0; i--) 
@@ -142,7 +186,7 @@ public class Compression
             fos.write((value >> (8 * i)) & 0xFF);
         }
     }
-
+*/
     private void writeInt(FileOutputStream fos, int value) throws IOException 
     {
         fos.write((value >> 24) & 0xFF);
@@ -151,22 +195,22 @@ public class Compression
         fos.write(value & 0xFF);
     }
 
-    private void writeHeader(FileOutputStream fos, int wordLength, int[] occurrences, int totalSymbols) throws IOException 
+    private void writeHeader(FileOutputStream fos, int wordLength, Node root, int totalSymbols) throws IOException 
     {
-        List<Pair> pairsList = convertToPairs(occurrences);
-
         fos.write(wordLength);
-
         writeInt(fos, totalSymbols);
-        writeInt(fos, pairsList.size());
 
-        for (Pair pair : pairsList) 
+        if(root == null)
         {
-            writeSymbol(fos, pair.getCharacter(), wordLength);
-            writeInt(fos, pair.getOccurrence());
+            return;
         }
+
+        saveTree(root, fos, wordLength);
+        flushBuffer(fos);
     }
 
+    
+/*
     private List<Pair> convertToPairs(int[] occurrences) 
     {
         List<Pair> pairs = new ArrayList<>();
@@ -181,4 +225,5 @@ public class Compression
 
         return pairs;
     }
+*/
 }

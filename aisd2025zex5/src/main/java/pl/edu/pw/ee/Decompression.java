@@ -9,6 +9,9 @@ import pl.edu.pw.ee.Structures.Node;
 
 public class Decompression 
 {
+    private int currentBitVal = 0;
+    private int currentBitIndex = -1; // -1 == trzeba wczytać nowy bajt
+
     public void decompress(String inputPath, String outputPath, int wordLength) throws IOException 
     {
         File fileInput = new File(inputPath);
@@ -55,27 +58,21 @@ public class Decompression
             {
                 System.out.println("Warning: User set -l " + wordLength + ", but file was compressed with -l " + fileWordLength + ". Program wont work properly!");
             }
+            
+            currentBitIndex = -1;
 
             int totalSymbols = readInt(fis);
-            int pairsCount = readInt(fis);
 
-            int[] occurrences = new int[(int) Math.pow(256, wordLength)];
-
-            for(int i = 0; i < pairsCount; i++)
-            {
-                int character = readSymbol(fis, wordLength);
-                int occurrence = readInt(fis);
-
-                occurrences[character] = occurrence;
+            if (totalSymbols == 0)
+            { 
+                return;
             }
-            // wczytany cały nagłówek!
 
-            HuffmanTree huffman = new HuffmanTree();
-            Node root = huffman.buildTree(occurrences);
+            Node root = readTree(fis, wordLength);
 
-            Node currentNode = root;
+            currentBitIndex = -1;
 
-            readBytes(fis, currentNode, totalSymbols, wordLength, outputPath);
+            readBytes(fis, root, totalSymbols, wordLength, outputPath);
         }
         
         
@@ -96,11 +93,12 @@ public class Decompression
         return ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4);
     }
 
-    private int readSymbol(FileInputStream fis, int length) throws IOException 
+    /*
+    private int readSymbol(FileInputStream fis, int wordLength) throws IOException 
     {
         int symbol = 0;
         
-        for (int i = 0; i < length; i++) 
+        for (int i = 0; i < wordLength; i++) 
         {
             int b = fis.read();
             if (b == -1) 
@@ -113,42 +111,77 @@ public class Decompression
         
         return symbol;
     }
+*/
+
+    private int readBit(FileInputStream fis) throws IOException 
+    {
+        if (currentBitIndex < 0) 
+        {
+            currentBitVal = fis.read();
+            if (currentBitVal == -1) 
+            {
+                throw new IOException("Unexpected EOF!");
+            }
+            currentBitIndex = 7;
+        }
+        
+        int bit = (currentBitVal >> currentBitIndex) & 1;
+        currentBitIndex--;
+        return bit;
+    }
+
+    private int readNBits(FileInputStream fis, int n) throws IOException
+    {
+        int value = 0;
+        for (int i = 0; i < n; i++) 
+        {
+            value = (value << 1) | readBit(fis);
+        }
+        return value;
+    }
+
+    private Node readTree(FileInputStream fis, int wordLength) throws IOException 
+    {
+        int bit = readBit(fis);
+        
+        if (bit == 1) //liść
+        {
+            int symbol = readNBits(fis, wordLength * 8);
+            return new Node(symbol, 0);
+        } 
+        else //węzeł wewnętrzny
+        {
+            Node left = readTree(fis, wordLength);
+            Node right = readTree(fis, wordLength);
+            return new Node(left, right);
+        }
+    }
 
     private void readBytes(FileInputStream fis, Node currentNode, int totalSymbols, int wordLength, String outputPath) throws IOException
     {
         int symbolsDecoded = 0;
         Node root = currentNode;
-        int currentByte;
 
         try(FileOutputStream fos = new FileOutputStream(outputPath))
         {
-            while(symbolsDecoded < totalSymbols && (currentByte = fis.read()) != -1)
+            while(symbolsDecoded < totalSymbols)
             {
-                for(int i = 7; i >= 0; i--)
+                int bit = readBit(fis);
+
+                if(bit == 1)
                 {
-                    int bit = (currentByte >> i) & 1;
+                    currentNode = currentNode.getLeft();
+                }
+                else
+                {
+                    currentNode = currentNode.getRight();
+                }
 
-                    if(bit == 1)
-                    {
-                        currentNode = currentNode.getLeft();
-                    }
-                    else
-                    {
-                        currentNode = currentNode.getRight();
-                    }
-
-                    if(currentNode.isLeaf() == true)
-                    {
-                        saveSymbol(fos, currentNode.getSymbol(), wordLength);
-
-                        symbolsDecoded++;
-                        currentNode = root;
-
-                        if(symbolsDecoded == totalSymbols)
-                        {
-                            break;
-                        }
-                    }
+                if(currentNode.isLeaf())
+                {
+                    saveSymbol(fos, currentNode.getSymbol(), wordLength);
+                    symbolsDecoded++;
+                    currentNode = root;
                 }
             }
         }

@@ -1,10 +1,10 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
 aisd2025zex5,pl.edu.pw.ee,HuffmanTree,0,130,0,16,0,32,0,12,0,4
 aisd2025zex5,pl.edu.pw.ee,CharCounting,3,52,0,4,1,8,1,3,1,1
-aisd2025zex5,pl.edu.pw.ee,Compression,33,360,3,29,3,74,3,22,0,9
-aisd2025zex5,pl.edu.pw.ee,Decompression,60,261,8,28,7,60,8,16,0,6
+aisd2025zex5,pl.edu.pw.ee,Compression,33,395,4,30,3,88,4,23,0,10
+aisd2025zex5,pl.edu.pw.ee,Decompression,60,285,7,27,7,69,7,18,0,8
 aisd2025zex5,pl.edu.pw.ee,App,172,0,27,0,51,0,17,0,2,0
-aisd2025zex5,pl.edu.pw.ee.Structures,Pair,0,15,0,0,0,6,0,3,0,3
+aisd2025zex5,pl.edu.pw.ee.Structures,Pair,15,0,0,0,6,0,3,0,3,0
 aisd2025zex5,pl.edu.pw.ee.Structures,PriorityQueue,0,180,0,18,0,40,0,16,0,7
 aisd2025zex5,pl.edu.pw.ee.Structures,MapOfPairs,18,0,0,0,5,0,3,0,3,0
 aisd2025zex5,pl.edu.pw.ee.Structures,Node,0,69,1,5,0,21,1,10,0,8
